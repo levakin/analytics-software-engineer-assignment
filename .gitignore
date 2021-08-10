@@ -1,0 +1,16 @@
+# binary files folder
+bin/
+
+*.pem
+.env
+coverage.out
+coverage.html
+
+# Mac
+.DS_Store
+
+# Editor files
+.idea/
+.vscode/
+*.iml
+*.swp
