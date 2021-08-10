@@ -1,6 +1,6 @@
 # Test assignment for Analytics Software Engineer position
 
-This repo contains Github event data for 1 hour.
+This repo contains GitHub event data for 1 hour.
 
 Please write a CLI application that outputs:
 
@@ -13,7 +13,7 @@ Please don't use any type of database or data processing engines (such as Apache
 
 What we want to see in your solution:
 
-- Readable, well structured code
+- Readable, well-structured code
 - Tests
 - Structured, meaningful commits
 - Some instructions on how to run the solution
