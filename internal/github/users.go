@@ -27,6 +27,7 @@ func NewUsersSample(actors []ActorCSV, commits []CommitCSV, events []EventCSV) *
 
 	numCommitsByPushEventID := newNumCommitsByPushEventID(commits)
 	actorActivityByActorID := newActorActivityByActorID(numCommitsByPushEventID, events)
+
 	for i := range actors {
 		// if username like dependabot[bot] skip
 		if isBotUsername(actors[i].Username) {

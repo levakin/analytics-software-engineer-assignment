@@ -13,6 +13,7 @@ func TestNewReposSample(t *testing.T) {
 		repoCSVs []github.RepoCSV
 		commits  []github.CommitCSV
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -97,6 +98,7 @@ func TestNewReposSample(t *testing.T) {
 			}},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := github.NewReposSample(tt.args.events, tt.args.repoCSVs, tt.args.commits); !reflect.DeepEqual(got, tt.want) {
@@ -110,9 +112,11 @@ func TestReposSample_TopNByCommitsPushed(t *testing.T) {
 	type fields struct {
 		M map[string]github.Repo
 	}
+
 	type args struct {
 		n int
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -233,6 +237,7 @@ func TestReposSample_TopNByCommitsPushed(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rs := &github.ReposSample{
@@ -254,9 +259,11 @@ func TestReposSample_TopNByWatchEvents(t *testing.T) {
 	type fields struct {
 		M map[string]github.Repo
 	}
+
 	type args struct {
 		n int
 	}
+
 	tests := []struct {
 		name    string
 		fields  fields

@@ -115,6 +115,7 @@ func printTopNUsersByPRsCreatedAndCommitsPushed(archivePath string, n int) error
 	}
 
 	fmt.Printf("top %d active users:\n", n)
+
 	for i, u := range topUsers {
 		fmt.Printf(
 			"%3d. username: %30s| id: %10s| activity: %10d| pushed commits: %5d| created pull requests: %5d|\n",
@@ -149,6 +150,7 @@ func printTopNReposByPushedCommits(archivePath string, n int) error {
 	}
 
 	fmt.Printf("top %d repositories by pushed commits:\n", n)
+
 	for i, repo := range topReposByPushedCommits {
 		fmt.Printf(
 			"%3d. name: %50s| id: %10s| commits pushed: %5d|\n",
@@ -183,6 +185,7 @@ func printTopNReposByWatchEvents(archivePath string, n int) error {
 	}
 
 	fmt.Printf("top %d repositories by watch events:\n", n)
+
 	for i, repo := range topReposByWatchEvents {
 		fmt.Printf(
 			"%3d. name: %50s| id: %10s| watch events: %5d|\n",

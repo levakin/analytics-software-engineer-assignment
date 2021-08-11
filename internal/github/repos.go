@@ -94,6 +94,7 @@ func (rs *ReposSample) TopNByWatchEvents(n int) ([]Repo, error) {
 
 func (rs *ReposSample) setAnalyticsData(events []EventCSV, commits []CommitCSV) {
 	numCommitsByPushEventID := newNumCommitsByPushEventID(commits)
+
 	for _, e := range events {
 		switch e.Type {
 		case PushEventType:

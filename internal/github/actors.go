@@ -19,6 +19,7 @@ func (a ActorActivity) Total() int {
 
 func newActorActivityByActorID(numCommitsByPushEventID map[string]int, events []EventCSV) map[string]ActorActivity {
 	m := make(map[string]ActorActivity)
+
 	for _, e := range events {
 		switch e.Type {
 		case PullRequestEventType:
@@ -42,5 +43,6 @@ func newActorActivityByActorID(numCommitsByPushEventID map[string]int, events []
 			}
 		}
 	}
+
 	return m
 }

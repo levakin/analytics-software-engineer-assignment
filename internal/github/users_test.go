@@ -14,6 +14,7 @@ func TestUserActivityCalculation(t *testing.T) {
 		commits []github.CommitCSV
 		events  []github.EventCSV
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -118,6 +119,7 @@ func TestUserActivityCalculation(t *testing.T) {
 			want: 2,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			users := github.NewUsersSample(tt.args.actors, tt.args.commits, tt.args.events)
@@ -136,6 +138,7 @@ func TestTopNActiveActors(t *testing.T) {
 		commits []github.CommitCSV
 		events  []github.EventCSV
 	}
+
 	tests := []struct {
 		name         string
 		args         args
@@ -241,6 +244,7 @@ func TestTopNActiveActors(t *testing.T) {
 			wantErr:      false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			us := github.NewUsersSample(tt.args.actors, tt.args.commits, tt.args.events)

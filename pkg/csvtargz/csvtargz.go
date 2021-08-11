@@ -4,11 +4,11 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"encoding/csv"
-	"github.com/pkg/errors"
 	"io"
 	"os"
 
 	"github.com/jszwec/csvutil"
+	"github.com/pkg/errors"
 )
 
 // ErrNoSuchFile is returned when no such file exists in archive.
@@ -31,6 +31,7 @@ func withCSVReaderFromTarGz(archivePath, csvFilename string, f func(csvReader *c
 	if err != nil {
 		return err
 	}
+
 	defer func() {
 		_ = gzFile.Close()
 	}()
@@ -39,6 +40,7 @@ func withCSVReaderFromTarGz(archivePath, csvFilename string, f func(csvReader *c
 	if err != nil {
 		return err
 	}
+
 	defer func() {
 		_ = gzReader.Close()
 	}()
