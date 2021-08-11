@@ -1,9 +1,10 @@
 package github
 
 import (
-	"errors"
 	"regexp"
 	"sort"
+
+	"github.com/pkg/errors"
 )
 
 // User represents a GitHub user. Bots with `botname[bot]` are not users and are filtered out.
@@ -13,18 +14,19 @@ type User struct {
 	Activity ActorActivity
 }
 
-// Users represents users collection
-type Users struct {
+// UsersSample represents users collection
+type UsersSample struct {
 	M map[string]User
 }
 
-// NewUsers parses data and returns Users collection.
-func NewUsers(actors []Actor, commits []Commit, events []Event) *Users {
-	users := Users{
+// NewUsersSample parses data and returns UsersSample collection.
+func NewUsersSample(actors []ActorCSV, commits []CommitCSV, events []EventCSV) *UsersSample {
+	users := UsersSample{
 		M: make(map[string]User),
 	}
 
-	actorActivityByActorID := newActorActivityByActorID(commits, events)
+	numCommitsByPushEventID := newNumCommitsByPushEventID(commits)
+	actorActivityByActorID := newActorActivityByActorID(numCommitsByPushEventID, events)
 	for i := range actors {
 		// if username like dependabot[bot] skip
 		if isBotUsername(actors[i].Username) {
@@ -43,9 +45,9 @@ func NewUsers(actors []Actor, commits []Commit, events []Event) *Users {
 
 // TopNActiveUsers finds the top N active users.
 // Activity for each user is a sum of all pushed commits and created pull requests.
-func (us *Users) TopNActiveUsers(n int) ([]User, error) {
+func (us *UsersSample) TopNActiveUsers(n int) ([]User, error) {
 	if n < 1 {
-		return nil, errors.New("n should be at least 1")
+		return nil, errors.Wrap(ErrWrongParam, "n should be at least 1")
 	}
 
 	// TODO: optimize to store only top N

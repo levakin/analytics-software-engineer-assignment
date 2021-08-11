@@ -1,7 +1,7 @@
 package github
 
-// Actor represents GitHub actor
-type Actor struct {
+// ActorCSV represents GitHub actor in CSV
+type ActorCSV struct {
 	ID       string `csv:"id"`
 	Username string `csv:"username"`
 }
@@ -17,9 +17,7 @@ func (a ActorActivity) Total() int {
 	return a.PushedCommits + a.CreatedPullRequests
 }
 
-func newActorActivityByActorID(commits []Commit, events []Event) map[string]ActorActivity {
-	numCommitsByPushEventID := newNumCommitsByPushEventID(commits)
-
+func newActorActivityByActorID(numCommitsByPushEventID map[string]int, events []EventCSV) map[string]ActorActivity {
 	m := make(map[string]ActorActivity)
 	for _, e := range events {
 		switch e.Type {
@@ -45,14 +43,4 @@ func newActorActivityByActorID(commits []Commit, events []Event) map[string]Acto
 		}
 	}
 	return m
-}
-
-func newNumCommitsByPushEventID(commits []Commit) map[string]int {
-	numCommitsByPushEventID := make(map[string]int)
-
-	for _, c := range commits {
-		numCommitsByPushEventID[c.EventID]++
-	}
-
-	return numCommitsByPushEventID
 }

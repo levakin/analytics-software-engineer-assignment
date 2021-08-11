@@ -1,24 +1,21 @@
-package main
+package csvtargz
 
 import (
 	"archive/tar"
 	"compress/gzip"
 	"encoding/csv"
-	"errors"
+	"github.com/pkg/errors"
 	"io"
 	"os"
 
 	"github.com/jszwec/csvutil"
 )
 
-const (
-	actorsCSVFilename  = "data/actors.csv"
-	commitsCSVFilename = "data/commits.csv"
-	eventsCSVFilename  = "data/events.csv"
-	reposCSVFilename   = "data/repos.csv"
-)
+// ErrNoSuchFile is returned when no such file exists in archive.
+var ErrNoSuchFile = errors.New("no such file")
 
-func decodeCSVFromTarGz(archivePath, csvFilename string, dst interface{}) error {
+// DecodeCSVFromTarGz decodes a CSV file from .tar.gz archive into dst.
+func DecodeCSVFromTarGz(archivePath, csvFilename string, dst interface{}) error {
 	return withCSVReaderFromTarGz(archivePath, csvFilename, func(csvReader *csv.Reader) error {
 		csvDecoder, err := csvutil.NewDecoder(csvReader)
 		if err != nil {
@@ -67,7 +64,7 @@ func newCSVReaderFromTar(tr *tar.Reader, csvFilename string) (*csv.Reader, error
 	for {
 		hdr, err := tr.Next()
 		if errors.Is(err, io.EOF) {
-			return nil, errors.New("csv not found in archive")
+			return nil, ErrNoSuchFile
 		}
 
 		if err != nil {
