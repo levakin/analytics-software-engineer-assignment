@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/levakin/analytics-software-engineer-assignment/internal/github"
+	"github.com/levakin/analytics-software-engineer-assignment/pkg/csvtargz"
+	"github.com/levakin/analytics-software-engineer-assignment/samples"
 )
 
 func TestUserActivityCalculation(t *testing.T) {
@@ -264,5 +266,60 @@ func TestTopNActiveActors(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func BenchmarkUsersSample_TopNActiveUsers(b *testing.B) {
+	archivePath := "data.tar.gz"
+
+	gzFile, err := samples.FS.Open(archivePath)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	defer func() {
+		_ = gzFile.Close()
+	}()
+
+	var events []github.EventCSV
+	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.EventsCSVFilename, &events); err != nil {
+		b.Fatal(err)
+	}
+
+	_ = gzFile.Close()
+
+	gzFile, err = samples.FS.Open(archivePath)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var commits []github.CommitCSV
+	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.CommitsCSVFilename, &commits); err != nil {
+		b.Fatal(err)
+	}
+
+	_ = gzFile.Close()
+
+	gzFile, err = samples.FS.Open(archivePath)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var actors []github.ActorCSV
+	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.ActorsCSVFilename, &actors); err != nil {
+		b.Fatal(err)
+	}
+
+	_ = gzFile.Close()
+
+	n := 10
+
+	for i := 0; i < b.N; i++ {
+		users := github.NewUsersSample(actors, commits, events)
+
+		_, err := users.TopNActiveUsers(n)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }

@@ -5,7 +5,11 @@ import (
 	"testing"
 
 	"github.com/levakin/analytics-software-engineer-assignment/internal/github"
+	"github.com/levakin/analytics-software-engineer-assignment/pkg/csvtargz"
+	"github.com/levakin/analytics-software-engineer-assignment/samples"
 )
+
+const archivePath = "data.tar.gz"
 
 func TestNewReposSample(t *testing.T) {
 	type args struct {
@@ -398,5 +402,113 @@ func TestReposSample_TopNByWatchEvents(t *testing.T) {
 				t.Errorf("TopNByWatchEvents() got = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func BenchmarkReposSample_TopNByCommitsPushed(b *testing.B) {
+	gzFile, err := samples.FS.Open(archivePath)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	defer func() {
+		_ = gzFile.Close()
+	}()
+
+	var events []github.EventCSV
+	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.EventsCSVFilename, &events); err != nil {
+		b.Fatal(err)
+	}
+
+	_ = gzFile.Close()
+
+	gzFile, err = samples.FS.Open(archivePath)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var commits []github.CommitCSV
+	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.CommitsCSVFilename, &commits); err != nil {
+		b.Fatal(err)
+	}
+
+	_ = gzFile.Close()
+
+	gzFile, err = samples.FS.Open(archivePath)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var repoCSVs []github.RepoCSV
+	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.ReposCSVFilename, &repoCSVs); err != nil {
+		b.Fatal(err)
+	}
+
+	_ = gzFile.Close()
+
+	n := 10
+
+	for i := 0; i < b.N; i++ {
+		repos := github.NewReposSample(events, repoCSVs, commits)
+
+		_, err := repos.TopNByCommitsPushed(n)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkReposSample_TopNByWatchEvents(b *testing.B) {
+	archivePath := archivePath
+
+	gzFile, err := samples.FS.Open(archivePath)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	defer func() {
+		_ = gzFile.Close()
+	}()
+
+	var events []github.EventCSV
+	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.EventsCSVFilename, &events); err != nil {
+		b.Fatal(err)
+	}
+
+	_ = gzFile.Close()
+
+	gzFile, err = samples.FS.Open(archivePath)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var commits []github.CommitCSV
+	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.CommitsCSVFilename, &commits); err != nil {
+		b.Fatal(err)
+	}
+
+	_ = gzFile.Close()
+
+	gzFile, err = samples.FS.Open(archivePath)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var repoCSVs []github.RepoCSV
+	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.ReposCSVFilename, &repoCSVs); err != nil {
+		b.Fatal(err)
+	}
+
+	_ = gzFile.Close()
+
+	n := 10
+
+	for i := 0; i < b.N; i++ {
+		repos := github.NewReposSample(events, repoCSVs, commits)
+
+		_, err := repos.TopNByWatchEvents(n)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }

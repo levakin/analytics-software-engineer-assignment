@@ -20,16 +20,16 @@ Requirements:
 You can use the application as follows:
 
 ```shell
-go run cmd/ghanalytics/main.go top-users -n 10 -p ./data.tar.gz
-go run cmd/ghanalytics/main.go top-repos-by-commits -n 10 -p ./data.tar.gz
-go run cmd/ghanalytics/main.go top-repos-by-watch-events -n 10 -p ./data.tar.gz
+go run cmd/ghanalytics/main.go top-users -n 10 -p ./samples/data.tar.gz
+go run cmd/ghanalytics/main.go top-repos-by-commits -n 10 -p ./samples/data.tar.gz
+go run cmd/ghanalytics/main.go top-repos-by-watch-events -n 10 -p ./samples/data.tar.gz
 ```
 
 Or you can install the application and use it as binary.
 
 ```shell
 go install ./cmd/ghanalytics
-ghanalytics top-users -n 10 -p ./data.tar.gz
+ghanalytics top-users -n 10 -p ./samples/data.tar.gz
 ```
 
 To see help instructions:

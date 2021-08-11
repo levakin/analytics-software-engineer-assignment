@@ -7,5 +7,12 @@ package github
 
 import "github.com/pkg/errors"
 
+const (
+	ActorsCSVFilename  = "data/actors.csv"
+	CommitsCSVFilename = "data/commits.csv"
+	EventsCSVFilename  = "data/events.csv"
+	ReposCSVFilename   = "data/repos.csv"
+)
+
 // ErrWrongParam is returned if wrong parameter is passed.
 var ErrWrongParam = errors.New("wrong parameter")
