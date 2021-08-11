@@ -20,13 +20,20 @@ const (
 // - Top 10 repositories sorted by amount of watch events
 func main() {
 	archivePath := "/Users/anton/Git/github.com/levakin/analytics-software-engineer-assignment/data.tar.gz"
-
-	if err := run(archivePath); err != nil {
+	n := 10
+	if err := run(archivePath, n); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run(archivePath string) error {
+func run(archivePath string, n int) error {
+	printTopNUsersByPRsCreatedAndCommitsPushed(archivePath, n)
+	printTopNReposByPushedCommits(archivePath, n)
+	printTopNReposByWatchEvents(archivePath, n)
+	return nil
+}
+
+func printTopNUsersByPRsCreatedAndCommitsPushed(archivePath string, n int) error {
 	var actors []github.ActorCSV
 	if err := csvtargz.DecodeCSVFromTarGz(archivePath, actorsCSVFilename, &actors); err != nil {
 		return err
@@ -44,19 +51,32 @@ func run(archivePath string) error {
 
 	users := github.NewUsersSample(actors, commits, events)
 
-	topUsers, err := users.TopNActiveUsers(10)
+	topUsers, err := users.TopNActiveUsers(n)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("top 10 active users:")
+	fmt.Printf("top %d active users:\n", n)
 	for i, u := range topUsers {
 		fmt.Printf(
 			"%3d. username: %30s| id: %10s| activity: %10d| pushed commits: %5d| created pull requests: %5d|\n",
 			i+1, u.Username, u.ID, u.Activity.Total(), u.Activity.PushedCommits, u.Activity.CreatedPullRequests,
 		)
 	}
-	fmt.Println("-------------------------------------------")
+
+	return nil
+}
+
+func printTopNReposByPushedCommits(archivePath string, n int) error {
+	var events []github.EventCSV
+	if err := csvtargz.DecodeCSVFromTarGz(archivePath, eventsCSVFilename, &events); err != nil {
+		return err
+	}
+
+	var commits []github.CommitCSV
+	if err := csvtargz.DecodeCSVFromTarGz(archivePath, commitsCSVFilename, &commits); err != nil {
+		return err
+	}
 
 	var repoCSVs []github.RepoCSV
 	if err := csvtargz.DecodeCSVFromTarGz(archivePath, reposCSVFilename, &repoCSVs); err != nil {
@@ -65,26 +85,46 @@ func run(archivePath string) error {
 
 	repos := github.NewReposSample(events, repoCSVs, commits)
 
-	topReposByPushedCommits, err := repos.TopNByCommitsPushed(10)
+	topReposByPushedCommits, err := repos.TopNByCommitsPushed(n)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("top 10 repositories by pushed commits:")
+	fmt.Printf("top %d repositories by pushed commits:\n", n)
 	for i, repo := range topReposByPushedCommits {
 		fmt.Printf(
 			"%3d. name: %50s| id: %10s| commits pushed: %5d|\n",
 			i+1, repo.Name, repo.ID, repo.CommitsPushed,
 		)
 	}
-	fmt.Println("-------------------------------------------")
+
+	return nil
+}
+
+func printTopNReposByWatchEvents(archivePath string, n int) error {
+	var events []github.EventCSV
+	if err := csvtargz.DecodeCSVFromTarGz(archivePath, eventsCSVFilename, &events); err != nil {
+		return err
+	}
+
+	var commits []github.CommitCSV
+	if err := csvtargz.DecodeCSVFromTarGz(archivePath, commitsCSVFilename, &commits); err != nil {
+		return err
+	}
+
+	var repoCSVs []github.RepoCSV
+	if err := csvtargz.DecodeCSVFromTarGz(archivePath, reposCSVFilename, &repoCSVs); err != nil {
+		return err
+	}
+
+	repos := github.NewReposSample(events, repoCSVs, commits)
 
 	topReposByWatchEvents, err := repos.TopNByWatchEvents(10)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("top 10 repositories by watch events:")
+	fmt.Printf("top %d repositories by watch events:\n", n)
 	for i, repo := range topReposByWatchEvents {
 		fmt.Printf(
 			"%3d. name: %50s| id: %10s| watch events: %5d|\n",
