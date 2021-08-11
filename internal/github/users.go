@@ -51,14 +51,21 @@ func (us *UsersSample) TopNActiveUsers(n int) ([]User, error) {
 	}
 
 	// TODO: optimize to store only top N
-	allUsers := make([]User, 0, len(us.M))
+	sortedUsers := make([]User, 0, len(us.M))
 	for _, user := range us.M {
-		allUsers = append(allUsers, user)
+		sortedUsers = append(sortedUsers, user)
 	}
 
-	sort.Slice(allUsers, func(i, j int) bool { return allUsers[i].Activity.Total() > allUsers[j].Activity.Total() })
+	sort.Slice(sortedUsers, func(i, j int) bool { return sortedUsers[i].Activity.Total() > sortedUsers[j].Activity.Total() })
 
-	return allUsers[0:n], nil
+	var last int
+	if len(sortedUsers) < n {
+		last = len(sortedUsers)
+	} else {
+		last = n
+	}
+
+	return sortedUsers[0:last], nil
 }
 
 var botUsernameRegex = regexp.MustCompile(`^.*\[bot]$`)

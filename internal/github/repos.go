@@ -51,14 +51,21 @@ func (rs *ReposSample) TopNByCommitsPushed(n int) ([]Repo, error) {
 	}
 
 	// TODO: optimize to store only top N
-	allRepos := make([]Repo, 0, len(rs.M))
+	sortedRepos := make([]Repo, 0, len(rs.M))
 	for _, user := range rs.M {
-		allRepos = append(allRepos, user)
+		sortedRepos = append(sortedRepos, user)
 	}
 
-	sort.Slice(allRepos, func(i, j int) bool { return allRepos[i].CommitsPushed > allRepos[j].CommitsPushed })
+	sort.Slice(sortedRepos, func(i, j int) bool { return sortedRepos[i].CommitsPushed > sortedRepos[j].CommitsPushed })
 
-	return allRepos[0:n], nil
+	var last int
+	if len(sortedRepos) < n {
+		last = len(sortedRepos)
+	} else {
+		last = n
+	}
+
+	return sortedRepos[0:last], nil
 }
 
 // TopNByWatchEvents returns top N repositories sorted by amount of watch events.
@@ -68,14 +75,21 @@ func (rs *ReposSample) TopNByWatchEvents(n int) ([]Repo, error) {
 	}
 
 	// TODO: optimize to store only top N
-	allRepos := make([]Repo, 0, len(rs.M))
+	sortedRepos := make([]Repo, 0, len(rs.M))
 	for _, user := range rs.M {
-		allRepos = append(allRepos, user)
+		sortedRepos = append(sortedRepos, user)
 	}
 
-	sort.Slice(allRepos, func(i, j int) bool { return allRepos[i].WatchEvents > allRepos[j].WatchEvents })
+	sort.Slice(sortedRepos, func(i, j int) bool { return sortedRepos[i].WatchEvents > sortedRepos[j].WatchEvents })
 
-	return allRepos[0:n], nil
+	var last int
+	if len(sortedRepos) < n {
+		last = len(sortedRepos)
+	} else {
+		last = n
+	}
+
+	return sortedRepos[0:last], nil
 }
 
 func (rs *ReposSample) setAnalyticsData(events []EventCSV, commits []CommitCSV) {
