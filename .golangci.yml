@@ -77,7 +77,7 @@ linters-settings:
     comparison: true
   gocognit:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
-    min-complexity: 40 # TODO: lower value to 20
+    min-complexity: 30
   goconst:
     min-len: 2
     min-occurrences: 3
