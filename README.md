@@ -2,18 +2,38 @@
 
 This repo contains GitHub event data for 1 hour.
 
-Please write a CLI application that outputs:
+CLI application outputs:
 
 - Top 10 active users sorted by amount of PRs created and commits pushed
 - Top 10 repositories sorted by amount of commits pushed
 - Top 10 repositories sorted by amount of watch events
 
-This assignment must be done in any type-safe language that the candidate prefers, extra points will be given for using Golang.
-Please don't use any type of database or data processing engines (such as Apache Spark), this data should be processed by your application.
-
-What we want to see in your solution:
+Requirements:
 
 - Readable, well-structured code
 - Tests
 - Structured, meaningful commits
 - Some instructions on how to run the solution
+
+## Instructions to run the app
+
+You can use the application as follows:
+
+```shell
+go run cmd/ghanalytics/main.go top-users -n 10 -p ./data.tar.gz
+go run cmd/ghanalytics/main.go top-repos-by-commits -n 10 -p ./data.tar.gz
+go run cmd/ghanalytics/main.go top-repos-by-watch-events -n 10 -p ./data.tar.gz
+```
+
+Or you can install the application and use it as binary.
+
+```shell
+go install ./cmd/ghanalytics
+ghanalytics top-users -n 10 -p ./data.tar.gz
+```
+
+To see help instructions:
+
+```shell
+ghanalytics
+```

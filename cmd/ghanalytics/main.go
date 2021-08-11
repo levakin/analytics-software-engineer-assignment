@@ -21,7 +21,8 @@ const (
 
 func main() {
 	app := &cli.App{
-		Name: projectName,
+		Name:        projectName,
+		Description: "A cli application that can be used to get analytics information out of archive with csv files with GitHub data",
 		Commands: []*cli.Command{
 			{
 				Name:  "top-users",
