@@ -1,8 +1,8 @@
 package github
 
 const (
-	pullRequestEventType = "PullRequestEvent"
-	pushEventType        = "PushEvent"
+	PullRequestEventType = "PullRequestEvent"
+	PushEventType        = "PushEvent"
 )
 
 type Event struct {
