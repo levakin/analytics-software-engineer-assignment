@@ -34,12 +34,20 @@ func run(archivePath string) error {
 		return err
 	}
 
-	topActors, err := github.TopNActiveActors(10, actors, commits, events)
+	users := github.NewUsers(actors, commits, events)
+
+	topUsers, err := users.TopNActiveUsers(100)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(topActors)
+	fmt.Println("top 10 active users:")
+	for i, u := range topUsers {
+		fmt.Printf(
+			"%3d. username: %30s| id: %10s| activity: %10d| pushed commits: %5d| created pull requests: %5d|\n",
+			i+1, u.Username, u.ID, u.Activity.Total(), u.Activity.PushedCommits, u.Activity.CreatedPullRequests,
+		)
+	}
 
 	return nil
 }

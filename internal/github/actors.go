@@ -1,56 +1,58 @@
 package github
 
-import "errors"
-
+// Actor represents GitHub actor
 type Actor struct {
 	ID       string `csv:"id"`
 	Username string `csv:"username"`
 }
 
-// TopNActiveActors finds the top N active actors.
-// Activity for each actor is a sum of all pushed commits and created pull requests.
-func TopNActiveActors(n int, actors []Actor, commits []Commit, events []Event) ([]Actor, error) {
-	if n < 1 {
-		return nil, errors.New("n should be at least 1")
-	}
-
-	return actors[0:n], nil
+// ActorActivity represents GitHub actor activity
+type ActorActivity struct {
+	PushedCommits       int
+	CreatedPullRequests int
 }
 
-func ActorActivity(actorID string, commits []Commit, events []Event) int {
-	return countActorsPushedCommits(actorID, commits, events) + countActorsCreatedPullRequests(actorID, events)
+// Total calculates total activity of actor
+func (a ActorActivity) Total() int {
+	return a.PushedCommits + a.CreatedPullRequests
 }
 
-func countActorsPushedCommits(actorID string, commits []Commit, events []Event) int {
-	var count int
+func newActorActivityByActorID(commits []Commit, events []Event) map[string]ActorActivity {
+	numCommitsByPushEventID := newNumCommitsByPushEventID(commits)
 
+	m := make(map[string]ActorActivity)
 	for _, e := range events {
-		if e.ActorID != actorID || e.Type != PushEventType {
-			continue
-		}
-
-		for _, c := range commits {
-			if c.EventID != e.ID {
-				continue
+		switch e.Type {
+		case PullRequestEventType:
+			if a, ok := m[e.ActorID]; ok {
+				a.CreatedPullRequests++
+				m[e.ActorID] = a
+			} else {
+				m[e.ActorID] = ActorActivity{
+					CreatedPullRequests: 1,
+				}
 			}
 
-			count++
+		case PushEventType:
+			if a, ok := m[e.ActorID]; ok {
+				a.PushedCommits += numCommitsByPushEventID[e.ID]
+				m[e.ActorID] = a
+			} else {
+				m[e.ActorID] = ActorActivity{
+					PushedCommits: numCommitsByPushEventID[e.ID],
+				}
+			}
 		}
 	}
-
-	return count
+	return m
 }
 
-func countActorsCreatedPullRequests(actorID string, events []Event) int {
-	var count int
+func newNumCommitsByPushEventID(commits []Commit) map[string]int {
+	numCommitsByPushEventID := make(map[string]int)
 
-	for _, e := range events {
-		if e.ActorID != actorID || e.Type != PullRequestEventType {
-			continue
-		}
-
-		count++
+	for _, c := range commits {
+		numCommitsByPushEventID[c.EventID]++
 	}
 
-	return count
+	return numCommitsByPushEventID
 }

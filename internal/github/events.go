@@ -1,10 +1,13 @@
 package github
 
 const (
+	// PullRequestEventType is pull request event type.
 	PullRequestEventType = "PullRequestEvent"
-	PushEventType        = "PushEvent"
+	// PushEventType is created every time a user pushes commits. Event in this case is connected with many commits.
+	PushEventType = "PushEvent"
 )
 
+// Event represent event from GitHub
 type Event struct {
 	ID      string `csv:"id"`
 	Type    string `csv:"type"`
