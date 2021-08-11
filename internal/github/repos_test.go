@@ -264,7 +264,118 @@ func TestReposSample_TopNByWatchEvents(t *testing.T) {
 		want    []github.Repo
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "wrong input",
+			args: args{
+				n: 0,
+			},
+			wantErr: true,
+		},
+		{
+			name: "top 1",
+			fields: struct{ M map[string]github.Repo }{M: map[string]github.Repo{
+				"1": {
+					ID:            "1",
+					Name:          "1",
+					CommitsPushed: 0,
+					WatchEvents:   2,
+				},
+				"2": {
+					ID:            "2",
+					Name:          "2",
+					CommitsPushed: 1,
+					WatchEvents:   0,
+				},
+			}},
+			args: args{
+				n: 1,
+			},
+			want: []github.Repo{
+				{
+					ID:            "1",
+					Name:          "1",
+					CommitsPushed: 0,
+					WatchEvents:   2,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "top 3 when total repos less than n",
+			fields: struct{ M map[string]github.Repo }{M: map[string]github.Repo{
+				"1": {
+					ID:            "1",
+					Name:          "1",
+					CommitsPushed: 0,
+					WatchEvents:   2,
+				},
+				"2": {
+					ID:            "2",
+					Name:          "2",
+					CommitsPushed: 1,
+					WatchEvents:   0,
+				},
+			}},
+			args: args{
+				n: 3,
+			},
+			want: []github.Repo{
+				{
+					ID:            "1",
+					Name:          "1",
+					CommitsPushed: 0,
+					WatchEvents:   2,
+				},
+				{
+					ID:            "2",
+					Name:          "2",
+					CommitsPushed: 1,
+					WatchEvents:   0,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "top 2 when total repos more than n",
+			fields: struct{ M map[string]github.Repo }{M: map[string]github.Repo{
+				"1": {
+					ID:            "1",
+					Name:          "1",
+					CommitsPushed: 0,
+					WatchEvents:   2,
+				},
+				"2": {
+					ID:            "2",
+					Name:          "2",
+					CommitsPushed: 1,
+					WatchEvents:   0,
+				},
+				"3": {
+					ID:            "3",
+					Name:          "3",
+					CommitsPushed: 1,
+					WatchEvents:   1,
+				},
+			}},
+			args: args{
+				n: 2,
+			},
+			want: []github.Repo{
+				{
+					ID:            "1",
+					Name:          "1",
+					CommitsPushed: 0,
+					WatchEvents:   2,
+				},
+				{
+					ID:            "3",
+					Name:          "3",
+					CommitsPushed: 1,
+					WatchEvents:   1,
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
