@@ -51,14 +51,25 @@ func (us *UsersSample) TopNActiveUsers(n int) ([]User, error) {
 		return nil, errors.Wrap(ErrWrongParam, "n should be at least 1")
 	}
 
-	// TODO: optimize to store only top N
-	sortedUsers := make([]User, 0, len(us.M))
+	sortedUsers := make([]User, 0, n)
+
 	for _, user := range us.M {
-		sortedUsers = append(sortedUsers, user)
+		if len(sortedUsers) < n {
+			sortedUsers = append(sortedUsers, user)
+			sort.Slice(sortedUsers, func(i, j int) bool { return sortedUsers[i].Activity.Total() > sortedUsers[j].Activity.Total() })
+
+			continue
+		}
+
+		if sortedUsers[n-1].Activity.Total() > user.Activity.Total() {
+			continue
+		}
+
+		sortedUsers[n-1] = user
+		sort.Slice(sortedUsers, func(i, j int) bool { return sortedUsers[i].Activity.Total() > sortedUsers[j].Activity.Total() })
 	}
 
-	sort.Slice(sortedUsers, func(i, j int) bool { return sortedUsers[i].Activity.Total() > sortedUsers[j].Activity.Total() })
-
+	// don't take more items than in list
 	var last int
 	if len(sortedUsers) < n {
 		last = len(sortedUsers)

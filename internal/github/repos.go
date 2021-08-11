@@ -50,14 +50,25 @@ func (rs *ReposSample) TopNByCommitsPushed(n int) ([]Repo, error) {
 		return nil, errors.Wrap(ErrWrongParam, "n should be at least 1")
 	}
 
-	// TODO: optimize to store only top N
-	sortedRepos := make([]Repo, 0, len(rs.M))
-	for _, user := range rs.M {
-		sortedRepos = append(sortedRepos, user)
+	sortedRepos := make([]Repo, 0, n)
+
+	for _, repo := range rs.M {
+		if len(sortedRepos) < n {
+			sortedRepos = append(sortedRepos, repo)
+			sort.Slice(sortedRepos, func(i, j int) bool { return sortedRepos[i].CommitsPushed > sortedRepos[j].CommitsPushed })
+
+			continue
+		}
+
+		if sortedRepos[n-1].CommitsPushed > repo.CommitsPushed {
+			continue
+		}
+
+		sortedRepos[n-1] = repo
+		sort.Slice(sortedRepos, func(i, j int) bool { return sortedRepos[i].CommitsPushed > sortedRepos[j].CommitsPushed })
 	}
 
-	sort.Slice(sortedRepos, func(i, j int) bool { return sortedRepos[i].CommitsPushed > sortedRepos[j].CommitsPushed })
-
+	// don't take more items than in list
 	var last int
 	if len(sortedRepos) < n {
 		last = len(sortedRepos)
@@ -74,14 +85,25 @@ func (rs *ReposSample) TopNByWatchEvents(n int) ([]Repo, error) {
 		return nil, errors.Wrap(ErrWrongParam, "n should be at least 1")
 	}
 
-	// TODO: optimize to store only top N
-	sortedRepos := make([]Repo, 0, len(rs.M))
-	for _, user := range rs.M {
-		sortedRepos = append(sortedRepos, user)
+	sortedRepos := make([]Repo, 0, n)
+
+	for _, repo := range rs.M {
+		if len(sortedRepos) < n {
+			sortedRepos = append(sortedRepos, repo)
+			sort.Slice(sortedRepos, func(i, j int) bool { return sortedRepos[i].WatchEvents > sortedRepos[j].WatchEvents })
+
+			continue
+		}
+
+		if sortedRepos[n-1].WatchEvents > repo.WatchEvents {
+			continue
+		}
+
+		sortedRepos[n-1] = repo
+		sort.Slice(sortedRepos, func(i, j int) bool { return sortedRepos[i].WatchEvents > sortedRepos[j].WatchEvents })
 	}
 
-	sort.Slice(sortedRepos, func(i, j int) bool { return sortedRepos[i].WatchEvents > sortedRepos[j].WatchEvents })
-
+	// don't take more items than in list
 	var last int
 	if len(sortedRepos) < n {
 		last = len(sortedRepos)
