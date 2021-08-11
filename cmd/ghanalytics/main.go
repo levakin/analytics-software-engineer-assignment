@@ -2,35 +2,93 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
+
+	"github.com/urfave/cli/v2"
 
 	"github.com/levakin/analytics-software-engineer-assignment/internal/github"
 	"github.com/levakin/analytics-software-engineer-assignment/pkg/csvtargz"
 )
 
 const (
+	projectName = "gh-analytics"
+
 	actorsCSVFilename  = "data/actors.csv"
 	commitsCSVFilename = "data/commits.csv"
 	eventsCSVFilename  = "data/events.csv"
 	reposCSVFilename   = "data/repos.csv"
 )
 
-// - Top 10 active users sorted by amount of PRs created and commits pushed
-// - Top 10 repositories sorted by amount of commits pushed
-// - Top 10 repositories sorted by amount of watch events
 func main() {
-	archivePath := "/Users/anton/Git/github.com/levakin/analytics-software-engineer-assignment/data.tar.gz"
-	n := 10
-	if err := run(archivePath, n); err != nil {
-		log.Fatal(err)
-	}
-}
+	app := &cli.App{
+		Name: projectName,
+		Commands: []*cli.Command{
+			{
+				Name:  "top-users",
+				Usage: "Prints top N active users sorted by amount of PRs created and commits pushed",
 
-func run(archivePath string, n int) error {
-	printTopNUsersByPRsCreatedAndCommitsPushed(archivePath, n)
-	printTopNReposByPushedCommits(archivePath, n)
-	printTopNReposByWatchEvents(archivePath, n)
-	return nil
+				Action: func(ctx *cli.Context) error {
+					return printTopNUsersByPRsCreatedAndCommitsPushed(ctx.String("p"), ctx.Int("n"))
+				},
+				Flags: []cli.Flag{
+					&cli.IntFlag{
+						Name:  "n",
+						Value: 10,
+						Usage: "top N",
+					},
+					&cli.StringFlag{
+						Name:  "p",
+						Value: "./data.tar.gz",
+						Usage: "Path to data.tar.gz",
+					},
+				},
+			},
+			{
+				Name:  "top-repos-by-commits",
+				Usage: "Prints top N repositories sorted by amount of commits pushed",
+				Action: func(ctx *cli.Context) error {
+					return printTopNReposByPushedCommits(ctx.String("p"), ctx.Int("n"))
+				},
+				Flags: []cli.Flag{
+					&cli.IntFlag{
+						Name:  "n",
+						Value: 10,
+						Usage: "top N",
+					},
+					&cli.StringFlag{
+						Name:  "p",
+						Value: "./data.tar.gz",
+						Usage: "Path to data.tar.gz",
+					},
+				},
+			},
+			{
+				Name:  "top-repos-by-watch-events",
+				Usage: "Prints top N repositories sorted by amount of watch events",
+				Action: func(ctx *cli.Context) error {
+					return printTopNReposByWatchEvents(ctx.String("p"), ctx.Int("n"))
+				},
+				Flags: []cli.Flag{
+					&cli.IntFlag{
+						Name:  "n",
+						Value: 10,
+						Usage: "top N",
+					},
+					&cli.StringFlag{
+						Name:  "p",
+						Value: "./data.tar.gz",
+						Usage: "Path to data.tar.gz",
+					},
+				},
+			},
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+
+		os.Exit(1)
+	}
 }
 
 func printTopNUsersByPRsCreatedAndCommitsPushed(archivePath string, n int) error {
