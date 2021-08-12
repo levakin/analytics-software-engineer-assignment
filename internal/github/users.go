@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// User represents a GitHub user. Bots with `botname[bot]` are not users and are filtered out.
+// User represents a GitHub user.
 type User struct {
 	ID       string
 	Username string
@@ -20,7 +20,8 @@ type UsersSample struct {
 }
 
 // NewUsersSample parses data and returns UsersSample collection.
-func NewUsersSample(actors []ActorCSV, commits []CommitCSV, events []EventCSV) *UsersSample {
+// Bots with `botname[bot]` are not humans and could be filtered out.
+func NewUsersSample(actors []ActorCSV, commits []CommitCSV, events []EventCSV, botsIncluded bool) *UsersSample {
 	users := UsersSample{
 		M: make(map[string]User),
 	}
@@ -30,7 +31,7 @@ func NewUsersSample(actors []ActorCSV, commits []CommitCSV, events []EventCSV) *
 
 	for i := range actors {
 		// if username like dependabot[bot] skip
-		if isBotUsername(actors[i].Username) {
+		if !botsIncluded && isBotUsername(actors[i].Username) {
 			continue
 		}
 

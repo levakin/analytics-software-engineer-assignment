@@ -25,7 +25,7 @@ func main() {
 				Usage: "Prints top N active users sorted by amount of PRs created and commits pushed",
 
 				Action: func(ctx *cli.Context) error {
-					return printTopNUsersByPRsCreatedAndCommitsPushed(ctx.String("p"), ctx.Int("n"))
+					return printTopNUsersByPRsCreatedAndCommitsPushed(ctx.String("p"), ctx.Int("n"), ctx.Bool("bots"))
 				},
 				Flags: []cli.Flag{
 					&cli.IntFlag{
@@ -37,6 +37,10 @@ func main() {
 						Name:  "p",
 						Value: "./samples/data.tar.gz",
 						Usage: "Path to data.tar.gz",
+					},
+					&cli.BoolFlag{
+						Name:  "bots",
+						Usage: "If flag is set, bots will be included in the report",
 					},
 				},
 			},
@@ -86,7 +90,7 @@ func main() {
 	}
 }
 
-func printTopNUsersByPRsCreatedAndCommitsPushed(archivePath string, n int) error {
+func printTopNUsersByPRsCreatedAndCommitsPushed(archivePath string, n int, botsIncluded bool) error {
 	gzFile, err := os.Open(archivePath)
 	if err != nil {
 		return err
@@ -133,7 +137,7 @@ func printTopNUsersByPRsCreatedAndCommitsPushed(archivePath string, n int) error
 		return err
 	}
 
-	users := github.NewUsersSample(actors, commits, events)
+	users := github.NewUsersSample(actors, commits, events, botsIncluded)
 
 	topUsers, err := users.TopNActiveUsers(n)
 	if err != nil {

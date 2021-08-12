@@ -11,10 +11,11 @@ import (
 
 func TestUserActivityCalculation(t *testing.T) {
 	type args struct {
-		actorID string
-		actors  []github.ActorCSV
-		commits []github.CommitCSV
-		events  []github.EventCSV
+		actorID      string
+		actors       []github.ActorCSV
+		commits      []github.CommitCSV
+		events       []github.EventCSV
+		botsIncluded bool
 	}
 
 	tests := []struct {
@@ -25,10 +26,11 @@ func TestUserActivityCalculation(t *testing.T) {
 		{
 			name: "should be no activity by actor",
 			args: struct {
-				actorID string
-				actors  []github.ActorCSV
-				commits []github.CommitCSV
-				events  []github.EventCSV
+				actorID      string
+				actors       []github.ActorCSV
+				commits      []github.CommitCSV
+				events       []github.EventCSV
+				botsIncluded bool
 			}{
 				actorID: "1",
 				actors: []github.ActorCSV{
@@ -46,10 +48,11 @@ func TestUserActivityCalculation(t *testing.T) {
 		{
 			name: "should calculate pushed commits",
 			args: struct {
-				actorID string
-				actors  []github.ActorCSV
-				commits []github.CommitCSV
-				events  []github.EventCSV
+				actorID      string
+				actors       []github.ActorCSV
+				commits      []github.CommitCSV
+				events       []github.EventCSV
+				botsIncluded bool
 			}{
 				actorID: "1",
 				actors: []github.ActorCSV{
@@ -71,10 +74,11 @@ func TestUserActivityCalculation(t *testing.T) {
 		{
 			name: "should ignore events other than push and pull requests",
 			args: struct {
-				actorID string
-				actors  []github.ActorCSV
-				commits []github.CommitCSV
-				events  []github.EventCSV
+				actorID      string
+				actors       []github.ActorCSV
+				commits      []github.CommitCSV
+				events       []github.EventCSV
+				botsIncluded bool
 			}{
 				actorID: "1",
 				actors: []github.ActorCSV{
@@ -98,10 +102,11 @@ func TestUserActivityCalculation(t *testing.T) {
 		{
 			name: "should calculate pull requests",
 			args: struct {
-				actorID string
-				actors  []github.ActorCSV
-				commits []github.CommitCSV
-				events  []github.EventCSV
+				actorID      string
+				actors       []github.ActorCSV
+				commits      []github.CommitCSV
+				events       []github.EventCSV
+				botsIncluded bool
 			}{
 				actorID: "1",
 				actors: []github.ActorCSV{
@@ -124,7 +129,7 @@ func TestUserActivityCalculation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			users := github.NewUsersSample(tt.args.actors, tt.args.commits, tt.args.events)
+			users := github.NewUsersSample(tt.args.actors, tt.args.commits, tt.args.events, tt.args.botsIncluded)
 
 			if got := users.M[tt.args.actorID].Activity.Total(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewUsersSample() = %v, want %v", got, tt.want)
@@ -135,10 +140,11 @@ func TestUserActivityCalculation(t *testing.T) {
 
 func TestTopNActiveActors(t *testing.T) {
 	type args struct {
-		n       int
-		actors  []github.ActorCSV
-		commits []github.CommitCSV
-		events  []github.EventCSV
+		n            int
+		actors       []github.ActorCSV
+		commits      []github.CommitCSV
+		events       []github.EventCSV
+		botsIncluded bool
 	}
 
 	tests := []struct {
@@ -150,20 +156,22 @@ func TestTopNActiveActors(t *testing.T) {
 		{
 			name: "should be error when err < 1",
 			args: struct {
-				n       int
-				actors  []github.ActorCSV
-				commits []github.CommitCSV
-				events  []github.EventCSV
+				n            int
+				actors       []github.ActorCSV
+				commits      []github.CommitCSV
+				events       []github.EventCSV
+				botsIncluded bool
 			}{n: -1},
 			wantErr: true,
 		},
 		{
 			name: "should find top 1",
 			args: struct {
-				n       int
-				actors  []github.ActorCSV
-				commits []github.CommitCSV
-				events  []github.EventCSV
+				n            int
+				actors       []github.ActorCSV
+				commits      []github.CommitCSV
+				events       []github.EventCSV
+				botsIncluded bool
 			}{
 				n: 1,
 				actors: []github.ActorCSV{
@@ -204,10 +212,11 @@ func TestTopNActiveActors(t *testing.T) {
 		{
 			name: "should find top 3",
 			args: struct {
-				n       int
-				actors  []github.ActorCSV
-				commits []github.CommitCSV
-				events  []github.EventCSV
+				n            int
+				actors       []github.ActorCSV
+				commits      []github.CommitCSV
+				events       []github.EventCSV
+				botsIncluded bool
 			}{
 				n: 3,
 				actors: []github.ActorCSV{
@@ -249,7 +258,7 @@ func TestTopNActiveActors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			us := github.NewUsersSample(tt.args.actors, tt.args.commits, tt.args.events)
+			us := github.NewUsersSample(tt.args.actors, tt.args.commits, tt.args.events, tt.args.botsIncluded)
 			got, err := us.TopNActiveUsers(tt.args.n)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("TopNActiveActors() error = %v, wantErr %v", err, tt.wantErr)
@@ -315,7 +324,7 @@ func BenchmarkUsersSample_TopNActiveUsers(b *testing.B) {
 	n := 10
 
 	for i := 0; i < b.N; i++ {
-		users := github.NewUsersSample(actors, commits, events)
+		users := github.NewUsersSample(actors, commits, events, false)
 
 		_, err := users.TopNActiveUsers(n)
 		if err != nil {
