@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"io"
 	"io/fs"
+	"os"
 
 	"github.com/jszwec/csvutil"
 	"github.com/pkg/errors"
@@ -14,8 +15,26 @@ import (
 // ErrNoSuchFile is returned when no such file exists in archive.
 var ErrNoSuchFile = errors.New("no such file")
 
-// DecodeCSVFromTarGz decodes a CSV file from .tar.gz archive into dst.
-func DecodeCSVFromTarGz(gzFile fs.File, csvFilename string, dst interface{}) error {
+// DecodeByPath decodes a CSV file from .tar.gz archive by path into dst.
+func DecodeByPath(archivePath, csvFilename string, dst interface{}) error {
+	gzFile, err := os.Open(archivePath)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		_ = gzFile.Close()
+	}()
+
+	if err := DecodeFromFile(gzFile, csvFilename, dst); err != nil {
+		return err
+	}
+
+	return gzFile.Close()
+}
+
+// DecodeFromFile decodes a CSV file from .tar.gz archive into dst.
+func DecodeFromFile(gzFile fs.File, csvFilename string, dst interface{}) error {
 	return withCSVReaderFromTarGz(gzFile, csvFilename, func(csvReader *csv.Reader) error {
 		csvDecoder, err := csvutil.NewDecoder(csvReader)
 		if err != nil {
@@ -26,7 +45,7 @@ func DecodeCSVFromTarGz(gzFile fs.File, csvFilename string, dst interface{}) err
 	})
 }
 
-func withCSVReaderFromTarGz(gzFile fs.File, csvFilename string, f func(csvReader *csv.Reader) error) error {
+func withCSVReaderFromTarGz(gzFile io.Reader, csvFilename string, f func(csvReader *csv.Reader) error) error {
 	gzReader, err := gzip.NewReader(gzFile)
 	if err != nil {
 		return err

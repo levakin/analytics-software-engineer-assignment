@@ -416,7 +416,7 @@ func BenchmarkReposSample_TopNByCommitsPushed(b *testing.B) {
 	}()
 
 	var events []github.EventCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.EventsCSVFilename, &events); err != nil {
+	if err := csvtargz.DecodeFromFile(gzFile, github.EventsCSVFilename, &events); err != nil {
 		b.Fatal(err)
 	}
 
@@ -428,7 +428,7 @@ func BenchmarkReposSample_TopNByCommitsPushed(b *testing.B) {
 	}
 
 	var commits []github.CommitCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.CommitsCSVFilename, &commits); err != nil {
+	if err := csvtargz.DecodeFromFile(gzFile, github.CommitsCSVFilename, &commits); err != nil {
 		b.Fatal(err)
 	}
 
@@ -440,7 +440,7 @@ func BenchmarkReposSample_TopNByCommitsPushed(b *testing.B) {
 	}
 
 	var repoCSVs []github.RepoCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.ReposCSVFilename, &repoCSVs); err != nil {
+	if err := csvtargz.DecodeFromFile(gzFile, github.ReposCSVFilename, &repoCSVs); err != nil {
 		b.Fatal(err)
 	}
 
@@ -471,7 +471,7 @@ func BenchmarkReposSample_TopNByWatchEvents(b *testing.B) {
 	}()
 
 	var events []github.EventCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.EventsCSVFilename, &events); err != nil {
+	if err := csvtargz.DecodeFromFile(gzFile, github.EventsCSVFilename, &events); err != nil {
 		b.Fatal(err)
 	}
 
@@ -483,7 +483,7 @@ func BenchmarkReposSample_TopNByWatchEvents(b *testing.B) {
 	}
 
 	var commits []github.CommitCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.CommitsCSVFilename, &commits); err != nil {
+	if err := csvtargz.DecodeFromFile(gzFile, github.CommitsCSVFilename, &commits); err != nil {
 		b.Fatal(err)
 	}
 
@@ -495,7 +495,7 @@ func BenchmarkReposSample_TopNByWatchEvents(b *testing.B) {
 	}
 
 	var repoCSVs []github.RepoCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.ReposCSVFilename, &repoCSVs); err != nil {
+	if err := csvtargz.DecodeFromFile(gzFile, github.ReposCSVFilename, &repoCSVs); err != nil {
 		b.Fatal(err)
 	}
 

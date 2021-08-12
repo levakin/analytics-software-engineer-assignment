@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/urfave/cli/v2"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/levakin/analytics-software-engineer-assignment/internal/github"
 	"github.com/levakin/analytics-software-engineer-assignment/pkg/csvtargz"
@@ -25,7 +27,7 @@ func main() {
 				Usage: "Prints top N active users sorted by amount of PRs created and commits pushed",
 
 				Action: func(ctx *cli.Context) error {
-					return printTopNUsersByPRsCreatedAndCommitsPushed(ctx.String("p"), ctx.Int("n"), ctx.Bool("bots"))
+					return printTopNUsersByPRsCreatedAndCommitsPushed(ctx.Context, ctx.String("p"), ctx.Int("n"), ctx.Bool("bots"))
 				},
 				Flags: []cli.Flag{
 					&cli.IntFlag{
@@ -48,7 +50,7 @@ func main() {
 				Name:  "top-repos-by-commits",
 				Usage: "Prints top N repositories sorted by amount of commits pushed",
 				Action: func(ctx *cli.Context) error {
-					return printTopNReposByPushedCommits(ctx.String("p"), ctx.Int("n"))
+					return printTopNReposByPushedCommits(ctx.Context, ctx.String("p"), ctx.Int("n"))
 				},
 				Flags: []cli.Flag{
 					&cli.IntFlag{
@@ -67,7 +69,7 @@ func main() {
 				Name:  "top-repos-by-watch-events",
 				Usage: "Prints top N repositories sorted by amount of watch events",
 				Action: func(ctx *cli.Context) error {
-					return printTopNReposByWatchEvents(ctx.String("p"), ctx.Int("n"))
+					return printTopNReposByWatchEvents(ctx.Context, ctx.String("p"), ctx.Int("n"))
 				},
 				Flags: []cli.Flag{
 					&cli.IntFlag{
@@ -90,50 +92,28 @@ func main() {
 	}
 }
 
-func printTopNUsersByPRsCreatedAndCommitsPushed(archivePath string, n int, botsIncluded bool) error {
-	gzFile, err := os.Open(archivePath)
-	if err != nil {
-		return err
-	}
+func printTopNUsersByPRsCreatedAndCommitsPushed(ctx context.Context, archivePath string, n int, botsIncluded bool) error {
+	var (
+		actors  []github.ActorCSV
+		commits []github.CommitCSV
+		events  []github.EventCSV
+	)
 
-	defer func() {
-		_ = gzFile.Close()
-	}()
+	g, _ := errgroup.WithContext(ctx)
 
-	var actors []github.ActorCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.ActorsCSVFilename, &actors); err != nil {
-		return err
-	}
+	g.Go(func() error {
+		return csvtargz.DecodeByPath(archivePath, github.ActorsCSVFilename, &actors)
+	})
 
-	if err := gzFile.Close(); err != nil {
-		return err
-	}
+	g.Go(func() error {
+		return csvtargz.DecodeByPath(archivePath, github.EventsCSVFilename, &events)
+	})
 
-	gzFile, err = os.Open(archivePath)
-	if err != nil {
-		return err
-	}
+	g.Go(func() error {
+		return csvtargz.DecodeByPath(archivePath, github.CommitsCSVFilename, &commits)
+	})
 
-	var events []github.EventCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.EventsCSVFilename, &events); err != nil {
-		return err
-	}
-
-	if err := gzFile.Close(); err != nil {
-		return err
-	}
-
-	gzFile, err = os.Open(archivePath)
-	if err != nil {
-		return err
-	}
-
-	var commits []github.CommitCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.CommitsCSVFilename, &commits); err != nil {
-		return err
-	}
-
-	if err := gzFile.Close(); err != nil {
+	if err := g.Wait(); err != nil {
 		return err
 	}
 
@@ -156,46 +136,28 @@ func printTopNUsersByPRsCreatedAndCommitsPushed(archivePath string, n int, botsI
 	return nil
 }
 
-func printTopNReposByPushedCommits(archivePath string, n int) error {
-	gzFile, err := os.Open(archivePath)
-	if err != nil {
-		return err
-	}
+func printTopNReposByPushedCommits(ctx context.Context, archivePath string, n int) error {
+	var (
+		commits  []github.CommitCSV
+		events   []github.EventCSV
+		repoCSVs []github.RepoCSV
+	)
 
-	var events []github.EventCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.EventsCSVFilename, &events); err != nil {
-		return err
-	}
+	g, _ := errgroup.WithContext(ctx)
 
-	if err := gzFile.Close(); err != nil {
-		return err
-	}
+	g.Go(func() error {
+		return csvtargz.DecodeByPath(archivePath, github.ReposCSVFilename, &repoCSVs)
+	})
 
-	gzFile, err = os.Open(archivePath)
-	if err != nil {
-		return err
-	}
+	g.Go(func() error {
+		return csvtargz.DecodeByPath(archivePath, github.EventsCSVFilename, &events)
+	})
 
-	var commits []github.CommitCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.CommitsCSVFilename, &commits); err != nil {
-		return err
-	}
+	g.Go(func() error {
+		return csvtargz.DecodeByPath(archivePath, github.CommitsCSVFilename, &commits)
+	})
 
-	if err := gzFile.Close(); err != nil {
-		return err
-	}
-
-	gzFile, err = os.Open(archivePath)
-	if err != nil {
-		return err
-	}
-
-	var repoCSVs []github.RepoCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.ReposCSVFilename, &repoCSVs); err != nil {
-		return err
-	}
-
-	if err := gzFile.Close(); err != nil {
+	if err := g.Wait(); err != nil {
 		return err
 	}
 
@@ -218,46 +180,28 @@ func printTopNReposByPushedCommits(archivePath string, n int) error {
 	return nil
 }
 
-func printTopNReposByWatchEvents(archivePath string, n int) error {
-	gzFile, err := os.Open(archivePath)
-	if err != nil {
-		return err
-	}
+func printTopNReposByWatchEvents(ctx context.Context, archivePath string, n int) error {
+	var (
+		commits  []github.CommitCSV
+		events   []github.EventCSV
+		repoCSVs []github.RepoCSV
+	)
 
-	var events []github.EventCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.EventsCSVFilename, &events); err != nil {
-		return err
-	}
+	g, _ := errgroup.WithContext(ctx)
 
-	if err := gzFile.Close(); err != nil {
-		return err
-	}
+	g.Go(func() error {
+		return csvtargz.DecodeByPath(archivePath, github.ReposCSVFilename, &repoCSVs)
+	})
 
-	gzFile, err = os.Open(archivePath)
-	if err != nil {
-		return err
-	}
+	g.Go(func() error {
+		return csvtargz.DecodeByPath(archivePath, github.EventsCSVFilename, &events)
+	})
 
-	var commits []github.CommitCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.CommitsCSVFilename, &commits); err != nil {
-		return err
-	}
+	g.Go(func() error {
+		return csvtargz.DecodeByPath(archivePath, github.CommitsCSVFilename, &commits)
+	})
 
-	if err := gzFile.Close(); err != nil {
-		return err
-	}
-
-	gzFile, err = os.Open(archivePath)
-	if err != nil {
-		return err
-	}
-
-	var repoCSVs []github.RepoCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.ReposCSVFilename, &repoCSVs); err != nil {
-		return err
-	}
-
-	if err := gzFile.Close(); err != nil {
+	if err := g.Wait(); err != nil {
 		return err
 	}
 

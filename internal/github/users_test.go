@@ -291,7 +291,7 @@ func BenchmarkUsersSample_TopNActiveUsers(b *testing.B) {
 	}()
 
 	var events []github.EventCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.EventsCSVFilename, &events); err != nil {
+	if err := csvtargz.DecodeFromFile(gzFile, github.EventsCSVFilename, &events); err != nil {
 		b.Fatal(err)
 	}
 
@@ -303,7 +303,7 @@ func BenchmarkUsersSample_TopNActiveUsers(b *testing.B) {
 	}
 
 	var commits []github.CommitCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.CommitsCSVFilename, &commits); err != nil {
+	if err := csvtargz.DecodeFromFile(gzFile, github.CommitsCSVFilename, &commits); err != nil {
 		b.Fatal(err)
 	}
 
@@ -315,7 +315,7 @@ func BenchmarkUsersSample_TopNActiveUsers(b *testing.B) {
 	}
 
 	var actors []github.ActorCSV
-	if err := csvtargz.DecodeCSVFromTarGz(gzFile, github.ActorsCSVFilename, &actors); err != nil {
+	if err := csvtargz.DecodeFromFile(gzFile, github.ActorsCSVFilename, &actors); err != nil {
 		b.Fatal(err)
 	}
 
